@@ -182,4 +182,52 @@ public class PaymentResponseDto {
     public void setAiSource(String aiSource) {
         this.aiSource = aiSource;
     }
+
+    // ===== Added in Phase 6 =====
+    // Policy Engine decision verdict fields
+    private String policyDecision;       // "ALLOWED", "BLOCKED", "ESCALATED"
+    private String policyDecisionLabel;  // "Recovery Allowed", etc.
+    private String finalAction;          // "RETRY", "STOP", "ESCALATE", etc.
+    private String finalActionLabel;     // "Retry Now", etc.
+    private String policyReason;
+
+    public String getPolicyDecision() {
+        return policyDecision;
+    }
+
+    public void setPolicyDecision(String policyDecision) {
+        this.policyDecision = policyDecision;
+    }
+
+    public String getPolicyDecisionLabel() {
+        return policyDecisionLabel;
+    }
+
+    public void setPolicyDecisionLabel(String policyDecisionLabel) {
+        this.policyDecisionLabel = policyDecisionLabel;
+    }
+
+    public String getFinalAction() {
+        return finalAction;
+    }
+
+    public void setFinalAction(String finalAction) {
+        this.finalAction = finalAction;
+    }
+
+    public String getFinalActionLabel() {
+        return finalActionLabel;
+    }
+
+    public void setFinalActionLabel(String finalActionLabel) {
+        this.finalActionLabel = finalActionLabel;
+    }
+
+    public String getPolicyReason() {
+        return policyReason;
+    }
+
+    public void setPolicyReason(String policyReason) {
+        this.policyReason = policyReason;
+    }
 }

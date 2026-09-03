@@ -5,9 +5,11 @@ import com.payrecover.payrecoverai.dto.PaymentResponseDto;
 import com.payrecover.payrecoverai.entity.AiDiagnosis;
 import com.payrecover.payrecoverai.entity.Payment;
 import com.payrecover.payrecoverai.entity.PaymentStatus;
+import com.payrecover.payrecoverai.entity.RecoveryActionEntity;
 import com.payrecover.payrecoverai.exception.ResourceNotFoundException;
 import com.payrecover.payrecoverai.repository.AiDiagnosisRepository;
 import com.payrecover.payrecoverai.repository.PaymentRepository;
+import com.payrecover.payrecoverai.repository.RecoveryActionRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -26,16 +28,9 @@ import java.util.stream.Collectors;
  * up a web server, and lets us reuse this logic from multiple controllers
  * later if needed.
  *
- * PHASE 5 ADDITION
- * The Failed Payments table in the spec has an "AI Recommendation" column, so
- * every payment row now carries the *latest* AI diagnosis for that payment (if
- * one exists). The diagnosis itself is produced elsewhere (AiDiagnosisService);
- * this class only reads it and copies it onto the DTO.
- *
- * @Transactional(readOnly = true) at class level: every method here only reads.
- * Telling the database that up front lets it skip write bookkeeping, and it
- * keeps one database session open for the whole method, which is what makes
- * lazy-loaded relationships safe to touch.
+ * PHASE 5 & 6 ADDITION
+ * The Failed Payments table carries the latest AI diagnosis and latest Policy Engine
+ * verdict for every payment row (if available).
  */
 @Service
 @Transactional(readOnly = true)
@@ -43,40 +38,37 @@ public class PaymentService {
 
     private final PaymentRepository paymentRepository;
     private final AiDiagnosisRepository aiDiagnosisRepository;
+    private final RecoveryActionRepository recoveryActionRepository;
 
-    // Constructor injection: Spring sees this is the only constructor and
-    // automatically supplies the beans it needs. Preferred over @Autowired on a
-    // field because it makes dependencies explicit and makes the class easy to
-    // unit test (just call `new PaymentService(mockRepo, mockDiagnosisRepo)`).
     public PaymentService(PaymentRepository paymentRepository,
-                          AiDiagnosisRepository aiDiagnosisRepository) {
+                          AiDiagnosisRepository aiDiagnosisRepository,
+                          RecoveryActionRepository recoveryActionRepository) {
         this.paymentRepository = paymentRepository;
         this.aiDiagnosisRepository = aiDiagnosisRepository;
+        this.recoveryActionRepository = recoveryActionRepository;
     }
 
     public List<PaymentResponseDto> getAllPayments() {
-        Map<String, AiDiagnosis> latest = latestDiagnosisByPaymentId();
+        Map<String, AiDiagnosis> latestDiag = latestDiagnosisByPaymentId();
+        Map<String, RecoveryActionEntity> latestAction = latestRecoveryActionByPaymentId();
 
         return paymentRepository.findAll()
                 .stream()
-                .map(p -> toDto(p, latest.get(p.getPaymentId())))
+                .map(p -> toDto(p, latestDiag.get(p.getPaymentId()), latestAction.get(p.getPaymentId())))
                 .collect(Collectors.toList());
     }
 
     public List<PaymentResponseDto> getFailedPayments() {
-        // "Failed" from the merchant's point of view = currently not in a good
-        // state: either not-yet-retried (FAILED) or retried-and-still-failed
-        // (FAILED_AGAIN). RECOVERED payments are excluded because they are
-        // now successful.
         List<PaymentStatus> failedLikeStatuses = Arrays.asList(
                 PaymentStatus.FAILED, PaymentStatus.FAILED_AGAIN
         );
 
-        Map<String, AiDiagnosis> latest = latestDiagnosisByPaymentId();
+        Map<String, AiDiagnosis> latestDiag = latestDiagnosisByPaymentId();
+        Map<String, RecoveryActionEntity> latestAction = latestRecoveryActionByPaymentId();
 
         return paymentRepository.findByStatusIn(failedLikeStatuses)
                 .stream()
-                .map(p -> toDto(p, latest.get(p.getPaymentId())))
+                .map(p -> toDto(p, latestDiag.get(p.getPaymentId()), latestAction.get(p.getPaymentId())))
                 .collect(Collectors.toList());
     }
 
@@ -85,12 +77,17 @@ public class PaymentService {
                 .orElseThrow(() ->
                         new ResourceNotFoundException("Payment not found with ID: " + paymentId));
 
-        // Single row -> single targeted query is cheaper than loading the map.
-        AiDiagnosis latest = aiDiagnosisRepository
+        AiDiagnosis latestDiag = aiDiagnosisRepository
                 .findFirstByPayment_PaymentIdOrderByCreatedAtDesc(paymentId)
                 .orElse(null);
 
-        return toDto(payment, latest);
+        RecoveryActionEntity latestAction = recoveryActionRepository
+                .findByPayment_PaymentIdOrderByCreatedAtDesc(paymentId)
+                .stream()
+                .findFirst()
+                .orElse(null);
+
+        return toDto(payment, latestDiag, latestAction);
     }
 
     /**
@@ -166,17 +163,17 @@ public class PaymentService {
         return latestByPaymentId;
     }
 
-    // Converts an Entity (database row) into a DTO (API response shape).
-    /**
-     * Same conversion, plus the AI columns.
-     *
-     * @param diagnosis the newest diagnosis for this payment, or null if the
-     *                  payment has never been analysed. Null is a completely
-     *                  normal state -- most rows will be null until the user
-     *                  clicks "Analyze" -- so it is handled, not treated as an
-     *                  error.
-     */
-    private PaymentResponseDto toDto(Payment payment, AiDiagnosis diagnosis) {
+    private Map<String, RecoveryActionEntity> latestRecoveryActionByPaymentId() {
+        Map<String, RecoveryActionEntity> latestByPaymentId = new HashMap<>();
+        for (RecoveryActionEntity r : recoveryActionRepository.findAllByOrderByCreatedAtDesc()) {
+            if (r.getPayment() != null) {
+                latestByPaymentId.putIfAbsent(r.getPayment().getPaymentId(), r);
+            }
+        }
+        return latestByPaymentId;
+    }
+
+    private PaymentResponseDto toDto(Payment payment, AiDiagnosis diagnosis, RecoveryActionEntity actionEntity) {
         PaymentResponseDto dto = new PaymentResponseDto();
         dto.setPaymentId(payment.getPaymentId());
         dto.setCustomerId(payment.getCustomerId());
@@ -189,30 +186,37 @@ public class PaymentService {
         dto.setCreatedAt(payment.getCreatedAt());
 
         if (diagnosis == null) {
-            // The UI reads this single flag and renders "Not analyzed yet"
-            // instead of null-checking five separate fields.
             dto.setAnalyzed(false);
-            return dto;
+        } else {
+            dto.setAnalyzed(true);
+            if (diagnosis.getFailureCategory() != null) {
+                dto.setFailureCategory(diagnosis.getFailureCategory().name());
+                dto.setFailureCategoryLabel(diagnosis.getFailureCategory().getDisplayName());
+            }
+            if (diagnosis.getRecommendedAction() != null) {
+                dto.setAiRecommendation(diagnosis.getRecommendedAction().name());
+                dto.setAiRecommendationLabel(diagnosis.getRecommendedAction().getDisplayName());
+            }
+            if (diagnosis.getConfidence() != null) {
+                dto.setConfidencePercent((int) Math.round(diagnosis.getConfidence() * 100));
+            }
+            if (diagnosis.getAiSource() != null) {
+                dto.setAiSource(diagnosis.getAiSource().name());
+            }
         }
 
-        dto.setAnalyzed(true);
+        if (actionEntity != null) {
+            if (actionEntity.getPolicyDecision() != null) {
+                dto.setPolicyDecision(actionEntity.getPolicyDecision().name());
+                dto.setPolicyDecisionLabel(actionEntity.getPolicyDecision().getDisplayName());
+            }
+            if (actionEntity.getFinalAction() != null) {
+                dto.setFinalAction(actionEntity.getFinalAction().name());
+                dto.setFinalActionLabel(actionEntity.getFinalAction().getDisplayName());
+            }
+            dto.setPolicyReason(actionEntity.getPolicyReason());
+        }
 
-        if (diagnosis.getFailureCategory() != null) {
-            dto.setFailureCategory(diagnosis.getFailureCategory().name());
-            dto.setFailureCategoryLabel(diagnosis.getFailureCategory().getDisplayName());
-        }
-        if (diagnosis.getRecommendedAction() != null) {
-            dto.setAiRecommendation(diagnosis.getRecommendedAction().name());
-            dto.setAiRecommendationLabel(diagnosis.getRecommendedAction().getDisplayName());
-        }
-        if (diagnosis.getConfidence() != null) {
-            // Stored 0.0-1.0, shown to humans as 0-100.
-            dto.setConfidencePercent((int) Math.round(diagnosis.getConfidence() * 100));
-        }
-        if (diagnosis.getAiSource() != null) {
-            // Lets the UI show the "AI unavailable - fallback rules used" badge.
-            dto.setAiSource(diagnosis.getAiSource().name());
-        }
         return dto;
     }
 }
