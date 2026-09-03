@@ -30,6 +30,21 @@ public class PaymentResponseDto {
     private PaymentStatus status;
     private LocalDateTime createdAt;
 
+    // ===== Added in Phase 5 =====
+    // These come from the ai_diagnoses table, not from the payments table, and
+    // they fill the "AI Recommendation" column of the Failed Payments screen.
+    // All of them are null until the payment has been analysed at least once,
+    // which is why `analyzed` exists: the UI checks that single boolean instead
+    // of null-checking four fields.
+
+    private boolean analyzed;
+    private String failureCategory;       // e.g. "BANK_TIMEOUT"
+    private String failureCategoryLabel;  // e.g. "Bank Timeout"
+    private String aiRecommendation;      // e.g. "RETRY"
+    private String aiRecommendationLabel; // e.g. "Retry Now"
+    private Integer confidencePercent;    // e.g. 91
+    private String aiSource;              // "LLM" or "FALLBACK_RULES"
+
     public PaymentResponseDto() {
     }
 
@@ -105,5 +120,66 @@ public class PaymentResponseDto {
 
     public void setCreatedAt(LocalDateTime createdAt) {
         this.createdAt = createdAt;
+    }
+
+    // ===== Phase 5 AI fields =====
+    // Note the getter for a boolean is "isAnalyzed", not "getAnalyzed".
+    // Jackson (the library that turns this object into JSON) uses that naming
+    // rule to decide the JSON key, so the React app will see "analyzed": true.
+
+    public boolean isAnalyzed() {
+        return analyzed;
+    }
+
+    public void setAnalyzed(boolean analyzed) {
+        this.analyzed = analyzed;
+    }
+
+    public String getFailureCategory() {
+        return failureCategory;
+    }
+
+    public void setFailureCategory(String failureCategory) {
+        this.failureCategory = failureCategory;
+    }
+
+    public String getFailureCategoryLabel() {
+        return failureCategoryLabel;
+    }
+
+    public void setFailureCategoryLabel(String failureCategoryLabel) {
+        this.failureCategoryLabel = failureCategoryLabel;
+    }
+
+    public String getAiRecommendation() {
+        return aiRecommendation;
+    }
+
+    public void setAiRecommendation(String aiRecommendation) {
+        this.aiRecommendation = aiRecommendation;
+    }
+
+    public String getAiRecommendationLabel() {
+        return aiRecommendationLabel;
+    }
+
+    public void setAiRecommendationLabel(String aiRecommendationLabel) {
+        this.aiRecommendationLabel = aiRecommendationLabel;
+    }
+
+    public Integer getConfidencePercent() {
+        return confidencePercent;
+    }
+
+    public void setConfidencePercent(Integer confidencePercent) {
+        this.confidencePercent = confidencePercent;
+    }
+
+    public String getAiSource() {
+        return aiSource;
+    }
+
+    public void setAiSource(String aiSource) {
+        this.aiSource = aiSource;
     }
 }
