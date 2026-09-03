@@ -215,6 +215,8 @@ public class PaymentService {
                 dto.setFinalActionLabel(actionEntity.getFinalAction().getDisplayName());
             }
             dto.setPolicyReason(actionEntity.getPolicyReason());
+            dto.setRecoveryOutcome(actionEntity.getOutcome());
+            dto.setAmountRecovered(actionEntity.getAmountRecovered());
         }
 
         return dto;

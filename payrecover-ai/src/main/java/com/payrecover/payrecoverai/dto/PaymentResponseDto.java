@@ -230,4 +230,24 @@ public class PaymentResponseDto {
     public void setPolicyReason(String policyReason) {
         this.policyReason = policyReason;
     }
+
+    // ===== Added in Phase 7 =====
+    private String recoveryOutcome;     // "RECOVERED", "FAILED_AGAIN", "NOT_ATTEMPTED", "ESCALATED"
+    private BigDecimal amountRecovered; // Amount recovered (zero unless RECOVERED)
+
+    public String getRecoveryOutcome() {
+        return recoveryOutcome;
+    }
+
+    public void setRecoveryOutcome(String recoveryOutcome) {
+        this.recoveryOutcome = recoveryOutcome;
+    }
+
+    public BigDecimal getAmountRecovered() {
+        return amountRecovered;
+    }
+
+    public void setAmountRecovered(BigDecimal amountRecovered) {
+        this.amountRecovered = amountRecovered;
+    }
 }
