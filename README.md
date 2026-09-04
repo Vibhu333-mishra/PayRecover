@@ -12,15 +12,14 @@ PayRecover AI transforms a failed payment into an **explainable recovery decisio
 
 The merchant dashboard provides a simple view of payment and recovery performance.
 
+![PayRecover AI Dashboard](screenshots/DASHBOARD1.png)
 
 
-![PayRecover AI Dashboard](payrecover-ai/screenshots/DASHBOARD1.png)
-
-![PayRecover AI Dashboard](payrecover-ai/screenshots/DASHBOARD2.png)
+![PayRecover AI Dashboard](/screenshots/DASHBOARD2.png)
 
 ## 💳 Failed Payments
 
-![Failed Payments](payrecover-ai/screenshots/failed-payments.png)
+![Failed Payments](screenshots/failed-payments.png)
 
 
 ---
