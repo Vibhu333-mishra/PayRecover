@@ -14,13 +14,13 @@ The merchant dashboard provides a simple view of payment and recovery performanc
 
 
 
-![PayRecover AI Dashboard](screenshots/DASHBOARD1.png)
+![PayRecover AI Dashboard](payrecover-ai/screenshots/DASHBOARD1.png)
 
-![PayRecover AI Dashboard](screenshots/DASHBOARD2.png)
+![PayRecover AI Dashboard](payrecover-ai/screenshots/DASHBOARD2.png)
 
 ## 💳 Failed Payments
 
-![Failed Payments](screenshots/failed-payments.png)
+![Failed Payments](payrecover-ai/screenshots/failed-payments.png)
 
 
 ---
