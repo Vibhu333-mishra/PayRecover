@@ -10,17 +10,6 @@ import java.util.List;
 
 /**
  * READ-ONLY view over the audit trail.
- *
- * WHY THERE IS NO create() METHOD HERE
- * Audit rows are written by whichever service made the decision, at the moment
- * it made it, inside that decision's transaction (see
- * AiDiagnosisService.writeAuditEntry). If writing were exposed here as a public
- * API, someone could later add an audit row that does not correspond to a real
- * event -- which would make the trail worthless. So this class only reads.
- *
- * @Transactional(readOnly = true) tells the database this connection will not
- * write, which lets it skip some bookkeeping. It is also a clear statement of
- * intent to anyone reading the class.
  */
 @Service
 @Transactional(readOnly = true)
