@@ -14,12 +14,6 @@ import org.springframework.stereotype.Component;
 /**
  * TURNS UNTRUSTED MODEL TEXT INTO A TRUSTED JAVA OBJECT.
  *
- * WHAT "STRUCTURED JSON OUTPUT" MEANS
- * We asked the model to answer with a JSON object instead of a paragraph. JSON
- * is just text with a strict shape, so a program can read specific fields out of
- * it. Without that, we would be doing string-searching on English sentences,
- * which breaks the moment the wording changes.
- *
  * WHY WE STILL DO NOT TRUST IT
  * Asking is not enforcing. Even with response_format=json_object, real models
  * do things like:
@@ -85,14 +79,6 @@ public class AiResponseParser {
 
     /**
      * Pulls the first {...} block out of whatever the model sent.
-     *
-     * Handles the three things that actually happen in practice:
-     *   1. clean JSON                  -> returned as-is
-     *   2. ```json { ... } ```         -> fences stripped
-     *   3. "Sure! Here it is: { ... }" -> prose before/after discarded
-     *
-     * We find the FIRST '{' and the LAST '}' and take everything between them.
-     * Crude, but it is exactly the right amount of cleverness for this job.
      */
     private String extractJsonObject(String raw) {
         if (raw == null || raw.isBlank()) {
@@ -118,10 +104,6 @@ public class AiResponseParser {
 
     /**
      * Forces confidence into the 0.0 - 1.0 range we promised the rest of the app.
-     *
-     * Models regularly answer 91 (meaning 91%) instead of 0.91. If we stored 91
-     * the UI would proudly display "9100% confident". So: anything above 1 is
-     * treated as a percentage and divided by 100, then the result is clamped.
      */
     private double normaliseConfidence(double value) {
         double confidence = value;
