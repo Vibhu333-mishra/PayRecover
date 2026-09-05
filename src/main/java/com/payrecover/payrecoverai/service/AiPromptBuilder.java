@@ -9,28 +9,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-/**
- * THE ONLY PLACE IN THE PROJECT THAT CONTAINS PROMPT TEXT.
- *
- * WHAT A PROMPT IS
- * A language model has no buttons or parameters for "classify this". The only
- * way to control it is the text you send. That text is the prompt. Writing it
- * is the actual engineering work in an LLM feature -- which is why it lives in
- * its own class instead of being buried inside a service method.
- *
- * WHY TWO PROMPTS (system + user)
- * Chat APIs take a list of messages, each with a role:
- *   - "system": standing instructions. Who you are, what format to answer in,
- *     what you are not allowed to do. Same on every single call.
- *   - "user":   the actual question. Different every call.
- * Separating them means the rules are stated once, clearly, and the model is
- * much less likely to drift out of format.
- *
- * WHY THE ALLOWED VALUES ARE BUILT FROM THE ENUMS
- * Look at allowedCategories() below -- it loops over FailureCategory.values().
- * If someone adds a new category to the enum next month, the prompt updates
- * itself. Hand-typing the list into the prompt text would silently rot.
- */
+
 @Component
 public class AiPromptBuilder {
 
@@ -81,12 +60,7 @@ public class AiPromptBuilder {
                 """.formatted(allowedCategories(), allowedActions());
     }
 
-    /**
-     * The facts of one specific payment. Only the fields listed in the project
-     * spec go in -- amount, method, failure code, attempts, provider, timestamp,
-     * customer context. No names, no card numbers, nothing sensitive: the model
-     * does not need them and sending them would be a bad habit to learn.
-     */
+    
     public String buildUserPrompt(Payment payment) {
         return """
                 Analyse this failed payment.
