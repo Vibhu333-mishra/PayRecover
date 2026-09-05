@@ -16,25 +16,7 @@ import java.util.Map;
 /**
  * THE ONLY CLASS THAT TALKS TO THE INTERNET.
  *
- * WHAT IT DOES
- * Sends two prompts to Groq's chat API and returns the raw text the model
- * replied with. It does not interpret that text -- that is AiResponseParser's
- * job. One class, one responsibility.
- *
- * WHAT AN LLM CALL ACTUALLY IS (no magic)
- * We POST a JSON body like this:
- *   {
- *     "model": "openai/gpt-oss-20b",
- *     "temperature": 0.2,
- *     "messages": [
- *        {"role": "system", "content": "...rules..."},
- *        {"role": "user",   "content": "...this payment..."}
- *     ]
- *   }
- * ...to https://api.groq.com/openai/v1/chat/completions with an
- * Authorization: Bearer <key> header, and we get JSON back. The model's answer
- * is buried at choices[0].message.content as a STRING. That is the whole
- * "AI integration" -- it is an HTTP call, nothing more.
+ * 
  *
  * HOW IT CONNECTS
  *   AiDiagnosisService --> LlmClient --> (Groq) --> AiResponseParser
@@ -50,11 +32,7 @@ public class LlmClient {
     private final RestClient restClient;
     private final ObjectMapper objectMapper;
 
-    /**
-     * ObjectMapper is Jackson's JSON reader/writer. Spring Boot already creates
-     * one for us (it uses it to turn our DTOs into JSON responses), so we just
-     * ask for it here instead of building another.
-     */
+     
     public LlmClient(LlmConfig config, RestClient llmRestClient, ObjectMapper objectMapper) {
         this.config = config;
         this.restClient = llmRestClient;
