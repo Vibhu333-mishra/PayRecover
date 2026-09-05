@@ -20,33 +20,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
 
-/**
- * THE CONDUCTOR OF PHASE 5. Everything else in this phase is a specialist that
- * does one thing; this class decides the order and owns the failure handling.
- *
- * THE FLOW, IN ORDER
- *   1. Load the payment (404 if it does not exist).
- *   2. Refuse to analyse a payment that never failed -- there is nothing to
- *      diagnose, and analysing it would waste an API call.
- *   3. Ask AiPromptBuilder for the two prompts.
- *   4. Send them via LlmClient, and hand the reply to AiResponseParser.
- *   5. If ANY of step 4 fails -> FallbackClassifier answers instead.
- *   6. Save the result to ai_diagnoses.
- *   7. Write one row to audit_logs.
- *   8. Convert to a DTO and return it.
- *
- * THE MOST IMPORTANT LINE IN THE WHOLE PHASE is the catch block in diagnose().
- * Because it is there, steps 6-8 always run, which is why POST /analyze returns
- * 200 OK with a real answer even with no API key and no internet.
- *
- * WHAT THIS CLASS DELIBERATELY DOES NOT DO
- * It does not decide whether the recommended action is allowed, and it does not
- * change the payment's status. A diagnosis is an opinion. Turning an opinion
- * into an action is the Policy Engine's job (Phase 6) and the simulator's job
- * (Phase 7). Keeping that boundary is the entire "AI recommends, rules decide"
- * story -- if this class ever called payment.setStatus(RECOVERED), the project
- * would have broken its own rule 12.
- */
+
 @Service
 public class AiDiagnosisService {
 
@@ -84,10 +58,6 @@ public class AiDiagnosisService {
 
     /**
      * Analyse one payment and persist the result.
-     *
-     * @Transactional means the two saves below (diagnosis + audit row) either
-     * both commit or both roll back. You never end up with a diagnosis that has
-     * no audit trail, which for a financial audit log is the whole point.
      */
     @Transactional
     public AiDiagnosisResponseDto analyze(String paymentId) {
@@ -121,13 +91,6 @@ public class AiDiagnosisService {
 
     /**
      * Try the LLM; fall back to rules on any problem.
-     *
-     * Note the SECOND catch block. LlmUnavailableException is the expected
-     * failure we designed for. RuntimeException is the one we did not predict
-     * -- a Jackson quirk, a provider changing its response shape, anything.
-     * Catching it too means an unknown bug degrades the feature instead of
-     * returning HTTP 500 in front of an audience. We log it at error level so it
-     * is still obvious in the console that something needs fixing.
      */
     private ParsedDiagnosis diagnose(Payment payment) {
         try {
@@ -181,10 +144,7 @@ public class AiDiagnosisService {
     /**
      * One audit row per diagnosis.
      *
-     * policyDecision and finalAction are intentionally left null here: at this
-     * point in the flow the policy engine has not run, and writing a guess into
-     * an audit log would defeat its purpose. Phase 6 adds a second row with
-     * eventType = "POLICY_DECISION" once a real verdict exists.
+     * policyDecision and finalAction are intentionally left null here
      */
     private void writeAuditEntry(Payment payment, ParsedDiagnosis parsed) {
         AuditLog entry = new AuditLog();
