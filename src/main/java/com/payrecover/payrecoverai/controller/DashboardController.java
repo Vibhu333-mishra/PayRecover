@@ -28,15 +28,13 @@ public class DashboardController {
     }
 
     // GET http://localhost:8080/api/dashboard
-    // The seven headline numbers for the metric cards.
+    // 
     @GetMapping
     public DashboardMetricsDto getDashboardMetrics() {
         return paymentService.getDashboardMetrics();
     }
 
-    // GET http://localhost:8080/api/dashboard/summary
-    // Metrics + all three charts in ONE response. This is what the React
-    // dashboard should call on page load.
+   
     @GetMapping("/summary")
     public DashboardSummaryDto getSummary() {
         return analyticsService.getSummary();
@@ -54,9 +52,7 @@ public class DashboardController {
         return analyticsService.getMethodBreakdown();
     }
 
-    // GET http://localhost:8080/api/dashboard/trend?days=14
-    // @RequestParam reads a query-string value. defaultValue is used when the
-    // caller omits ?days=, so the plain URL still works.
+    
     @GetMapping("/trend")
     public List<DailyTrendItemDto> getDailyTrend(
             @RequestParam(defaultValue = "14") int days) {
