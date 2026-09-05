@@ -8,13 +8,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
-
-/**
- * Read endpoints for the audit trail.
- *
- * There is no POST here on purpose: nothing outside the app is allowed to write
- * an audit entry. See AuditLogService for the reasoning.
- */
 @RestController
 @RequestMapping("/api/audit-logs")
 public class AuditLogController {
