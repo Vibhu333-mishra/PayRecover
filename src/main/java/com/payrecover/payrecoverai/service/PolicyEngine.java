@@ -13,7 +13,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Pure Java deterministic rule engine that evaluates a payment failure and its AI
+ * Pure  deterministic rule engine that evaluates a payment failure and its AI
  * recommendation against strict financial safety policies.
  *
  * STRICT RULE PRECEDENCE (Priority Order):
@@ -27,8 +27,7 @@ import java.util.List;
  *    - Low AI confidence (< 0.60).
  *    - AI recommendation is explicitly ESCALATE.
  *
- * 3. Default Pass (Priority 3 -> ALLOWED):
- *    - All safety and escalation checks passed.
+ 
  */
 @Service
 public class PolicyEngine {
