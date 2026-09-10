@@ -2,14 +2,7 @@ package com.payrecover.payrecoverai.dto;
 
 import java.time.LocalDateTime;
 
-/**
- * One line of the Audit Logs screen.
- *
- * Flat and string-heavy on purpose: an audit view is read, sorted and filtered,
- * never edited, so simple text columns are exactly right. Nulls are expected --
- * a diagnosis row has no policy decision yet, and a policy row has no AI
- * confidence of its own.
- */
+
 public class AuditLogDto {
 
     private Long id;
