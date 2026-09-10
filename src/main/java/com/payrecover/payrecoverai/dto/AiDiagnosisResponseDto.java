@@ -3,19 +3,7 @@ package com.payrecover.payrecoverai.dto;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
-/**
- * What POST /api/payments/{paymentId}/analyze returns -- everything the
- * "AI Payment Analysis" panel needs, in one object.
- *
- * DESIGN NOTES
- *  - Enums are sent as BOTH the raw name and a display label
- *    (failureCategory = "BANK_TIMEOUT", failureCategoryLabel = "Bank Timeout").
- *    The raw name is for React logic and badge colours; the label is for humans.
- *    Sending both means the frontend never hardcodes a translation table.
- *  - confidencePercent saves the frontend from float maths: 0.91 -> 91.
- *  - aiAvailable + notice are the honesty fields. When the LLM could not be
- *    reached, aiAvailable is false and notice explains it in plain words.
- */
+/
 public class AiDiagnosisResponseDto {
 
     // --- context, so the panel is self-contained ---
