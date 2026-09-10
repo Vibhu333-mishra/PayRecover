@@ -1,14 +1,6 @@
 package com.payrecover.payrecoverai.dto;
 
-/**
- * Per-payment-method health, for the "Which payment method fails most?" chart.
- *
- * Example row:
- *   { "method": "UPI", "total": 24, "failed": 11, "recovered": 5, "failureRate": 45.83 }
- *
- * This is a genuinely useful merchant insight: it tells them whether the
- * revenue leak is concentrated in one rail (say UPI) or spread evenly.
- */
+
 public class MethodBreakdownItemDto {
 
     private String method;
