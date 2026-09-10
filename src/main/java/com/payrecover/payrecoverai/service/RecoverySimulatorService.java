@@ -32,7 +32,7 @@ import java.util.List;
  *    - On RECOVERED: payment.status = RECOVERED, amountRecovered = payment.amount.
  *    - On FAILED_AGAIN: payment.status = FAILED_AGAIN, amountRecovered = 0.
  * 5. Updates recovery_actions entity and writes eventType = "RECOVERY_ATTEMPT" to audit_logs.
- * 6. Returns visual decision timeline in DTO.
+ 
  */
 @Service
 public class RecoverySimulatorService {
