@@ -15,16 +15,7 @@ import java.util.List;
 import java.util.Random;
 import java.util.Set;
 
-/**
- * CommandLineRunner is a Spring Boot interface: any bean implementing it has
- * its run() method executed ONCE, automatically, right after the application
- * has fully started up. We use that to auto-populate the database with
- * realistic-looking synthetic payment data, so the app is demo-ready the
- * moment you run it -- no manual SQL inserts required.
- *
- * It's safe to restart the app repeatedly: we check if data already exists
- * first, so we never duplicate records.
- */
+
 @Component
 public class DataSeederService implements CommandLineRunner {
 
