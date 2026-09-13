@@ -5,19 +5,7 @@ import com.payrecover.payrecoverai.entity.PaymentStatus;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
-/**
- * DTO = Data Transfer Object.
- *
- * Why not just return the Payment @Entity directly from the controller?
- * 1. It decouples our API "contract" (what the frontend sees) from our
- *    database structure (what's actually stored). We can change the entity
- *    later (e.g. rename a column) without breaking the React app.
- * 2. It avoids accidentally leaking internal fields (like the numeric
- *    primary key "id") or triggering lazy-loading/serialization issues.
- * 3. In later phases we will ADD fields here (failureCategory, aiRecommendation,
- *    confidence, recoveryStatus) that don't exist on the entity at all --
- *    they get computed by other services and merged into this DTO.
- */
+
 public class PaymentResponseDto {
 
     private String paymentId;
