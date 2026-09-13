@@ -4,13 +4,7 @@ import java.time.LocalDateTime;
 
 /**
  * Consistent JSON shape for every error the API returns, e.g.:
- * {
- *   "timestamp": "2026-09-02T10:15:30",
- *   "status": 404,
- *   "error": "Not Found",
- *   "message": "Payment not found with ID: PAY9999",
- *   "path": "/api/payments/PAY9999"
- * }
+ *
  */
 public class ErrorResponse {
 
