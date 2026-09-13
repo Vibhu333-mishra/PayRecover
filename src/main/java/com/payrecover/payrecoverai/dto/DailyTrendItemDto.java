@@ -2,15 +2,6 @@ package com.payrecover.payrecoverai.dto;
 
 import java.time.LocalDate;
 
-/**
- * One point on the "last N days" line chart.
- *
- * Example:
- *   { "date": "2026-09-01", "total": 4, "failed": 2, "recovered": 1 }
- *
- * Days with no activity are still returned (with zeros) so the line chart has
- * an even x-axis instead of jumping over gaps.
- */
 public class DailyTrendItemDto {
 
     private LocalDate date;
